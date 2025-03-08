@@ -34,11 +34,11 @@ def get_response(prompt):
         "Assistant:"
     )
 
+    
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are an Agile expert. Only answer Agile-related questions."},
-            {"role": m["role"], "content": m["content"]}
+            {"role": "system", "content": "You are an Agile expert. Only answer Agile-related questions."}
             for m in st.session_state.messages
         ] + [{"role": "user", "content": restricted_prompt}]
     )
