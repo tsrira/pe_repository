@@ -1,69 +1,49 @@
-import openai
 import streamlit as st
+from openai import OpenAI
 
-# Initialize OpenAI API key
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Initialize OpenAI client using Streamlit's secrets
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# Set app title
+# Title of the app
 st.title("Sriram's Agile Bot")
 
-# Initialize chat history
+# Initialize session state for chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # Display chat history
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    role, content = message["role"], message["content"]
+    with st.chat_message(role):
+        st.markdown(content)
 
-# User input box
-user_input = st.chat_input("Ask about Agile Frameworks...")
+# Collect user input for symptoms
+user_input = st.chat_input("Describe your symptoms here...")
 
-# Define restricted topics (negative prompt filtering)
-restricted_keywords = [
-    "politics", "sports", "movies", "technology", "history", "science", 
-    "celebrities", "finance", "medical", "gaming", "entertainment"
-]
-
-def is_off_topic(user_input):
-    """Check if user input contains restricted topics."""
-    return any(word in user_input.lower() for word in restricted_keywords)
-
-# Function to get OpenAI response with Agile restriction
-def get_response(messages):
-    system_message = {
-        "role": "system",
-        "content": (
-            "You are an expert on Agile methodologies and Agile Frameworks. "
-            "You can only answer questions related to Agile, Scrum, Kanban, SAFe, and similar frameworks. "
-            "If a user asks about unrelated topics, politely decline to answer."
-        )
-    }
-
-    messages_with_system = [system_message] + messages  
-
-    response = openai.ChatCompletion.create(
+# Function to get a response from OpenAI with health advice
+def get_response(prompt):
+    # Here, you may include a more specific prompt or fine-tune the assistant's instructions to provide general remedies
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=messages_with_system
+        messages=[
+            {"role": m["role"], "content": m["content"]}
+            for m in st.session_state.messages
+        ] + [{"role": "user", "content": prompt}]
     )
-    return response["choices"][0]["message"]["content"]
+    # Access the content directly as an attribute
+    return response.choices[0].message.content
 
-# Process user input
+# Process and display response if there's input
 if user_input:
-    if is_off_topic(user_input):
-        st.warning("⚠️ This chatbot only answers questions about Agile Frameworks. Please ask relevant questions.")
-    else:
-        # Store and display user message
-        st.session_state.messages.append({"role": "user", "content": user_input})
-        
-        with st.chat_message("user"):
-            st.markdown(user_input)
+    # Append user's message
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-        # Get response from OpenAI
-        response = get_response(st.session_state.messages)
-
-        # Store and display assistant response
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        
-        with st.chat_message("assistant"):
-            st.markdown(response)
+    # Generate assistant's response
+    assistant_prompt = f"User has reported the following symptoms: {user_input}. Provide a general remedy or advice."
+    assistant_response = get_response(assistant_prompt)
+    st.session_state.messages.append({"role": "assistant", "content": assistant_response})
+    
+    with st.chat_message("assistant"):
+        st.markdown(assistant_response)
