@@ -17,33 +17,26 @@ for message in st.session_state.messages:
     with st.chat_message(role):
         st.markdown(content)
 
-# Collect user input for symptoms
-user_input = st.chat_input("Describe your symptoms here...")
+# User input prompt
+user_input = st.chat_input("Ask about Agile and Agile Frameworks...")
 
-# Function to get a response from OpenAI with health advice
+# Function to check if input is Agile-related
+def is_agile_related(text):
+    agile_keywords = ["agile", "scrum", "kanban", "lean", "safe", "xp", "extreme programming", "sprint", "backlog", "retrospective"]
+    return any(word in text.lower() for word in agile_keywords)
+
+# Function to get OpenAI response with restriction
 def get_response(prompt):
-    # Here, you may include a more specific prompt or fine-tune the assistant's instructions to provide general remedies
+    restricted_prompt = (
+        "You are an AI assistant that only answers questions related to Agile methodologies and Agile frameworks. "
+        "If the user asks anything unrelated to Agile, Scrum, Kanban, SAFe, or Lean, politely refuse to answer and ask them to stay on topic.\n\n"
+        f"User: {prompt}\n"
+        "Assistant:"
+    )
+
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
+            {"role": "system", "content": "You are an Agile expert. Only answer Agile-related questions."},
             {"role": m["role"], "content": m["content"]}
-            for m in st.session_state.messages
-        ] + [{"role": "user", "content": prompt}]
-    )
-    # Access the content directly as an attribute
-    return response.choices[0].message.content
-
-# Process and display response if there's input
-if user_input:
-    # Append user's message
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
-    # Generate assistant's response
-    assistant_prompt = f"User has reported the following symptoms: {user_input}. Provide a general remedy or advice."
-    assistant_response = get_response(assistant_prompt)
-    st.session_state.messages.append({"role": "assistant", "content": assistant_response})
-    
-    with st.chat_message("assistant"):
-        st.markdown(assistant_response)
+            for m
