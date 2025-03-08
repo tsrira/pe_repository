@@ -22,7 +22,7 @@ user_input = st.chat_input("Ask about Agile and Agile Frameworks...")
 
 # Function to check if input is Agile-related
 def is_agile_related(text):
-    agile_keywords = ["agile", "scrum", "kanban", "lean", "safe", "xp", "extreme programming", "sprint", "backlog", "retrospective"]
+    agile_keywords = ["agile", "scrum", "kanban", "lean", "safe", "xp", "extreme programming", "sprint", "backlog", "retrospective","crystal"]
     return any(word in text.lower() for word in agile_keywords)
 
 # Function to get OpenAI response with restriction
