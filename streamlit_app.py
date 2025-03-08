@@ -5,7 +5,7 @@ import streamlit as st
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # Set app title
-st.title("Agile Frameworks")
+st.title("Sriram's Agile Bot")
 
 # Initialize chat history
 if "messages" not in st.session_state:
