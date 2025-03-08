@@ -39,4 +39,26 @@ def get_response(prompt):
         messages=[
             {"role": "system", "content": "You are an Agile expert. Only answer Agile-related questions."},
             {"role": m["role"], "content": m["content"]}
-            for m
+            for m in st.session_state.messages
+        ] + [{"role": "user", "content": restricted_prompt}]
+    )
+
+    return response.choices[0].message.content
+
+# Process input
+if user_input:
+    if is_agile_related(user_input):
+        # Append user message
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        with st.chat_message("user"):
+            st.markdown(user_input)
+
+        # Generate response
+        assistant_response = get_response(user_input)
+        st.session_state.messages.append({"role": "assistant", "content": assistant_response})
+        
+        with st.chat_message("assistant"):
+            st.markdown(assistant_response)
+    else:
+        with st.chat_message("assistant"):
+            st.markdown("I only discuss Agile methodologies and frameworks. Please ask something Agile-related.")
